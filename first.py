@@ -4,12 +4,6 @@ from aiogram import Bot, Dispatcher, executor, types # импортируем ai
 import requests
 from bs4 import BeautifulSoup as bs
 
-headers = {'Accept-Encoding':' gzip, deflate', 'User-Agent': 'python-requests/2.4.2 CPython/3.7.3 Windows/10', 'Content-type': 'application/json', 'Accept': 'text/plain'}
- 
-resp = req.get(url,  headers=headers, verify=False)
- 
-j=resp.json()
-
 API_TOKEN = '6086335526:AAFCFqJGHugQAZ-PJPcFkTKoHBh1MYsJTjg' # Токен 
 logging.basicConfig(level=logging.INFO) # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
