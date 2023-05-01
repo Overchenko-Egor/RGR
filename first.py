@@ -10,30 +10,31 @@ API_TOKEN = '6086335526:AAFCFqJGHugQAZ-PJPcFkTKoHBh1MYsJTjg' # Токен
 logging.basicConfig(level=logging.INFO) # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
-URL = "https://www.drom.ru/"
+URL_main = "https://www.drom.ru/"
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-	r = requests.get(URL)
+	r = requests.get(URL_main)
 	soup = bs(r.text, 'html.parser')
 	mc = soup.find_all("a", class_="css-1q66we5 e4ojbx43")
 	other_models = soup.find_all("noscript")
 	for items in other_models:
 		mc += items.find_all("a", href_ = "")
 	clear_m_c = [c.text for c in mc]
-	print (clear_m_c)
 	await message.answer(clear_m_c)
-	print (clear_m_c)
 	
 
 @dp.message_handler(commands=['find'])
 async def Find(message:  types.Message):
 	await message.answer("Введите населенный пункт")
 	country()
+	
+	
 
 @dp.message_handler(commands=['favourites'])
 async def Favourites(message: types.Message):
 	await message.answer("Избранные объявления")
+	
 	
 
 
@@ -42,16 +43,21 @@ async def Favourites(message: types.Message):
 def country():
 	@dp.message_handler(content_types = ['text'])
 	async def Otvet(message: types.Message):
-		# r = requests.get("https://auto.drom.ru")
-		# soup = bs(r.text, 'html.parser')
-		# country_name = soup.find_all("div", class_="css-7vvcbu edw82zo1")
-		# clear_country_name = [c.text for c in country_name]
-		# await message.answer (clear_country_name)
-
 		ru_text = message.text.lower()
-		text = translit(ru_text, language_code='ru', reversed=True)
+		name_country = translit(ru_text, language_code='ru', reversed=True)
+		
+		await message.answer(name_country)
 
-		await message.answer(text)
+		URL_for_find = ".drom.ru/auto/"
+		r = requests.get("https://" + name_country + URL_for_find)
+		soup = bs(r.text, 'html.parser')
+		find_tegs = soup.find_all("div", class_ = "css-l1wt7n e3f4v4l2")
+		# print (find_tegs)
+		cars_after_find = []
+		for items in find_tegs:
+			cars_after_find += items.find_all("span")
+		clear_c_f = [c.text for c in cars_after_find]
+		await message.answer(clear_c_f)
 
 
 
