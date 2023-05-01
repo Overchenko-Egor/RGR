@@ -10,15 +10,18 @@ API_TOKEN = '6086335526:AAFCFqJGHugQAZ-PJPcFkTKoHBh1MYsJTjg' # Токен
 logging.basicConfig(level=logging.INFO) # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
-URL = "https://moscow.drom.ru/auto/"
+URL = "https://www.drom.ru/"
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
 	r = requests.get(URL)
 	soup = bs(r.text, 'html.parser')
 	mc = soup.find_all("a", class_="css-1q66we5 e4ojbx43")
-	print (mc)
+	other_models = soup.find_all("noscript")
+	for items in other_models:
+		mc += items.find_all("a", href_ = "")
 	clear_m_c = [c.text for c in mc]
+	print (clear_m_c)
 	await message.answer(clear_m_c)
 	print (clear_m_c)
 	
