@@ -44,8 +44,14 @@ def country():
 	@dp.message_handler(content_types = ['text'])
 	async def Otvet(message: types.Message):
 		ru_text = message.text.lower()
-		name_country = translit(ru_text, language_code='ru', reversed=True)
-		
+		if message.text.lower() == "москва":
+			name_country = "moscow"
+		elif (message.text.lower() == "санкт-петербург") or (message.text.lower() == "питер"):
+			name_country = "spb"
+		else:
+			name_country = translit(ru_text, language_code='ru', reversed=True)
+			name_country = name_country.replace("'", "")
+			name_country = name_country.replace(" ", "-")
 		await message.answer(name_country)
 
 		URL_for_find = ".drom.ru/auto/"
