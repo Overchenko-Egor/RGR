@@ -7,11 +7,11 @@ import start as st
 import requests
 from bs4 import BeautifulSoup as bs
 
-from transliterate import translit
 import json
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
+
 
 storage = MemoryStorage()
 API_TOKEN = '6086335526:AAFCFqJGHugQAZ-PJPcFkTKoHBh1MYsJTjg' # Токен 
@@ -21,15 +21,17 @@ dp = Dispatcher(bot, storage=storage)
 URL_main = "https://www.drom.ru/"
 
 
+fd.register_handlers_find(dp)
+
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
 	st.start()
 	
 
-@dp.message_handler(commands='find', state = None)
-async def Find(message:  types.Message):
-	await fd.FSMFind.model.set()
-	await message.answer("Введите марку авто")
+# @dp.message_handler(commands='find', state = None)
+# async def Find(message:  types.Message):
+# 	await fd.FSMFind.model.set()
+# 	await message.answer("Введите марку авто")
 	
 
 @dp.message_handler(commands=['favourites'])
@@ -39,8 +41,7 @@ async def Favourites(message: types.Message):
 @dp.message_handler()
 async def echo_message(msg: types.Message):
     await bot.send_message(msg.from_user.id, msg.text)
-
-fd.register_handler(dp)
+    
 
 
 
