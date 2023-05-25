@@ -9,6 +9,8 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
+Find_URL = ''
+
 storage = MemoryStorage()
 # КЛАСС СОСТОЯНИЙ
 class FSMFind(StatesGroup):
@@ -37,7 +39,7 @@ async def model(message: types.Message, state: FSMContext):
 # Город
 async def country_find(message:  types.Message, state: FSMContext):
     mod = message.text
-    URL_for_find = ".drom.ru/auto/"
+    URL_for_find = ".drom.ru/"
     country_name = await country(URL_for_find, mod)
     flag = checker(country_name)
 
@@ -64,10 +66,24 @@ async def search_parameter(message:  types.Message, state: FSMContext):
     mod = message.text
     async with state.proxy() as date:
         date ['search_parameter'] = mod
+    
     # ЗАВЕРШЕНИЕ
+    # async with state.proxy() as date:
+    #         await message.answer(str(date))
+
+    # https://barnaul.drom.ru/hyundai/?distance=100
+    name_country = None
+    name_radius = None
+    name_model = None
     async with state.proxy() as date:
-            await message.answer(str(date))
+        name_country = date['country']
+        name_radius = date['radius']
+        name_model = date['model']
+    Find_URL = name_country + name_model + '/?distance=' + name_radius
+    await message.answer(Find_URL)
     await state.finish()
+
+
 
 # ВЫЗОВ ФИЛЬТРОВ
 async def choose_filter(mod):
