@@ -2,6 +2,7 @@ import first as main
 import json
 import requests
 from transliterate import translit
+import os
 
 def start():
     parser_models_cars()
@@ -17,8 +18,8 @@ def parser_models_cars():
 		mc += items.find_all("a", href_ = "")
 	clear_m_c = [c.text for c in mc]
 	name_file = 'all_models_cars.json'
-	Write_json(clear_m_c, name_file)
-	x()
+	# Write_json(clear_m_c, name_file)
+	y()
 	# parser_full_models_cars()
         
 def parser_full_models_cars():
@@ -70,6 +71,14 @@ def x():
 			print(clear_m_c)
 			name_file = 'models/' + name + '.json'
 			Write_json(clear_m_c, name_file)
+
+def y():
+	files = os.listdir('models')
+
+	# Переименование файлов
+	for filename in files:
+		new_filename = filename.lower()
+		os.rename(os.path.join('models', filename), os.path.join('models', new_filename))
 
 def Write_json(clear_m_c, name_file):
 	with open(name_file, 'w', encoding="utf-8") as outfile:

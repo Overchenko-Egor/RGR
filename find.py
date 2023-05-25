@@ -15,6 +15,7 @@ storage = MemoryStorage()
 # КЛАСС СОСТОЯНИЙ
 class FSMFind(StatesGroup):
     model = State()
+    full_model = State()
     country = State()
     radius = State()
     search_parameter = State()
@@ -24,7 +25,7 @@ async def Find(message:  types.Message):
 	await FSMFind.model.set()
 	await message.answer("Введите марку авто")
 	
-# Модель
+# Моарка
 async def model(message: types.Message, state: FSMContext):
      mod = message.text
      if search_json('all_models_cars.json', mod):
@@ -34,7 +35,24 @@ async def model(message: types.Message, state: FSMContext):
             async with state.proxy() as date:
                   date ['model'] = message.text
             await FSMFind.next()
-            await message.answer("Введите город для подбора авто")
+            await message.answer("Введите модель для подбора авто")
+
+# Модель
+async def full_model(message: types.Message, state: FSMContext):
+    mod = message.text
+    brand = ''
+    async with state.proxy() as date:
+        brand = date['model']
+    tmp = 'models/' + brand + '.json'
+    print (tmp)
+    if search_json(tmp, mod):
+        await message.answer("Некоректная модуль автомобиля. Попробуйте ещё раз!")
+        await FSMFind.full_model.set()
+    else:
+        async with state.proxy() as date:
+            date ['full_model'] = message.text
+        await FSMFind.next()
+        await message.answer("Введите город для подбора авто")
 
 # Город
 async def country_find(message:  types.Message, state: FSMContext):
@@ -75,11 +93,13 @@ async def search_parameter(message:  types.Message, state: FSMContext):
     name_country = None
     name_radius = None
     name_model = None
+    name_full_model = None
     async with state.proxy() as date:
         name_country = date['country']
         name_radius = date['radius']
         name_model = date['model']
-    Find_URL = name_country + name_model + '/?distance=' + name_radius
+        name_full_model = date['full_model']
+    Find_URL = name_country + name_model + '/' + name_full_model + '/?distance=' + name_radius
     await message.answer(Find_URL)
     await state.finish()
 
@@ -94,6 +114,9 @@ async def choose_filter(mod):
     else:
         filter.therd()
      
+# async def check_model(tmp):
+#     with open(tmp, 'r', encoding='utf-8') as file:
+#         data = json.load(file)
 
 #ПРОВЕРКА МАРКИ 
 def search_json(file_path, word):
@@ -110,6 +133,7 @@ def search_json(file_path, word):
 def register_handlers_find(dp: Dispatcher):
     dp.register_message_handler(Find, commands = ['find'], state = None)
     dp.register_message_handler(model, state = FSMFind.model)
+    dp.register_message_handler(full_model, state = FSMFind.full_model)
     dp.register_message_handler(country_find, state = FSMFind.country)
     dp.register_message_handler(radius, state = FSMFind.radius)
     dp.register_message_handler(search_parameter, state = FSMFind.search_parameter)
