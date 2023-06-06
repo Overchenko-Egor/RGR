@@ -157,7 +157,8 @@ async def pars(message:  types.Message, state: FSMContext):
         for items in second_find:
             items = items.get('href')
             href_car.append (items)
-    await message.answer(href_car)
+    if len(href_car) == 0:
+        await message.answer ("По вашему запросу ничего не найдено.")
     await state.finish()
 
 async def open_advertisement(message: types.Message):
@@ -169,16 +170,6 @@ async def cancel_handler(message: types.Message, state: FSMContext):
         return
     await state.finish()
     await message.answer ('OK')
-
-# # ВЫЗОВ ФИЛЬТРОВ
-# async def choose_filter(mod):
-#     if mod == 1:
-#         filter.first()
-#     elif mod == 2:
-#         filter.second()
-#     else:
-#         filter.therd()
-
 
 #РЕГИСТРАТОР   
 def register_handlers_find(dp: Dispatcher):
