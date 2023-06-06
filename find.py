@@ -106,12 +106,21 @@ async def radius(message:  types.Message, state: FSMContext):
 # Фильтры
 async def search_parameter(message:  types.Message, state: FSMContext):
     mod = message.text
-    async with state.proxy() as date:
-        date ['search_parameter'] = mod
+    if (mod.isdigit()) and (int(mod) > 0) and (int(mod) < 4):
+        async with state.proxy() as date:
+            date ['search_parameter'] = mod
+        if int(mod) == 1:
+            await filter.first(message, state)
+        elif int(mod) == 2:
+            await filter.second(message, state)
+        elif int(mod) == 3:
+            await filter.third(message, state)
+        
+        await open_advertisement(message)
+    else:
+        await message.answer("Вы ввели некорректное значение. Повторите попытку!")
+        await FSMFind.search_parameter.set()
 
-    last_message = await message.answer("Ваш запрос обрабатывается...")
-    await pars(message, state)
-    await last_message.delete()
     
 
 async def pars(message:  types.Message, state: FSMContext):
@@ -136,29 +145,23 @@ async def pars(message:  types.Message, state: FSMContext):
     int_year = int(name_year)
     min_year = str(int_year - 1)
     max_year = str(int_year + 1)
-    # /?minyear=1955&maxyear=2022
-    # Find_URL = name_country.lower() + name_model.lower() + '/' + name_full_model.lower() + '/?distance=' + name_radius + '&maxyear=' + max_year + '&minyear=' + min_year + '&unsold=1'
-    # https://chita.drom.ru/kia/rio/page5/?distance=1000&order=price&unsold=1
     cars_after_find = []
     for i in range(1, 6):
         url = name_country.lower() + name_model.lower() + '/' + name_full_model.lower() + "/page" + str(i) + '/?distance=' + name_radius + '&maxyear=' + max_year + '&minyear=' + min_year + '&unsold=1'
-        # print (url)
         r = requests.get(url)
         soup = bs(r.text, 'html.parser')
         first_find = soup.find('div', class_ ='css-1nvf6xk eojktn00')
         second_find = []
         for first in first_find:
             second_find += first.find_all("a", class_ = "css-xb5nz8 e1huvdhj1")
-        # print (find_tegs)
         for items in second_find:
             items = items.get('href')
             href_car.append (items)
-        # clear_c_f = [c.text for c in cars_after_find]
-        # await message.answer(cars_after_find)
     await message.answer(href_car)
-    print(href_car)
     await state.finish()
 
+async def open_advertisement(message: types.Message):
+    f = 9
 
 async def cancel_handler(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
@@ -167,14 +170,14 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     await state.finish()
     await message.answer ('OK')
 
-# ВЫЗОВ ФИЛЬТРОВ
-async def choose_filter(mod):
-    if mod == 1:
-        filter.first()
-    elif mod == 2:
-        filter.second()
-    else:
-        filter.therd()
+# # ВЫЗОВ ФИЛЬТРОВ
+# async def choose_filter(mod):
+#     if mod == 1:
+#         filter.first()
+#     elif mod == 2:
+#         filter.second()
+#     else:
+#         filter.therd()
 
 
 #РЕГИСТРАТОР   
@@ -190,43 +193,84 @@ def register_handlers_find(dp: Dispatcher):
     dp.register_message_handler(cancel_handler, Text(equals='отмена', ignore_case=True), state="*")
 
 async def ckek_model(model, brand):
-    conn = sq.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM brand WHERE name_brand LIKE ? COLLATE NOCASE", ('%brand%',))
-    res_br = cursor.fetchall()
-    id_brand = None
-    for row in res_br:
-        id_brand = row[1]
-    cursor.execute("SELECT * FROM model WHERE name_model = ? AND id_model = ?", (model, id_brand))
-    results = cursor.fetchall()
-    if results == None:
+    brand = brand.capitalize()
+    model = model.capitalize()
+    database_name = 'database.db'
+    brand_table_name = "brand"
+    brand_column_name = "name_brand"
+    brand_search_value = brand
+
+    # Получаем id_brand из таблицы brand
+    id_brand_value = get_id_brand(database_name, brand_search_value)
+
+    id_brand_value = id_brand_value[0]  # Преобразуем кортеж в значение строки
+    print (id_brand_value)
+
+    model_table_name = "model"
+    model_column_id = "id_brand"
+    model_column_name = "name_model"
+    model_search_value = model
+
+    if check_model_exists(database_name, model_table_name, model_column_id, model_column_name, id_brand_value, model_search_value):
+        return False
+    else:
+        return True
+
+
+def get_id_brand(database, search_value):
+    # Устанавливаем соединение с базой данных
+    connection = sq.connect(database)
+    cursor = connection.cursor()
+
+    # Выполняем запрос для получения id_brand
+    query = f"SELECT id_brand FROM brand WHERE name_brand = ?"
+    cursor.execute(query, (search_value,))
+
+    # Извлекаем результат запроса
+    id_brand = cursor.fetchone()
+
+    # Закрываем соединение с базой данных
+    cursor.close()
+    connection.close()
+
+    return id_brand
+
+# ПРОВЕРКА 
+def check_model_exists(database, table, column_id, column_name, id_value, name_value):
+    # Устанавливаем соединение с базой данных
+    connection = sq.connect(database)
+    cursor = connection.cursor()
+
+    # Выполняем запрос для проверки существования строки в таблице model
+    query = f"SELECT COUNT(*) FROM {table} WHERE {column_id} = ? AND {column_name} = ?"
+    cursor.execute(query, (id_value, name_value))
+
+    # Извлекаем результат запроса
+    row_count = cursor.fetchone()[0]
+
+    # Закрываем соединение с базой данных
+    cursor.close()
+    connection.close()
+
+    # Проверяем количество строк
+    if row_count > 0:
         return True
     else:
         return False
 
+# ПРОВЕРКА МАРКИ
 async def check_brand(brand):
+    brand = brand.capitalize()
     conn = sq.connect('database.db')
     cursor = conn.cursor()
-    print (model)
-    cursor.execute("SELECT * FROM brand WHERE name_brand LIKE ? COLLATE NOCASE", ('%brand%',))
-    # cursor.execute("SELECT * FROM brand WHERE name_brand = ?", (brand,))
-    results = cursor.fetchall()
-    print (results)
-    if results == None:
-        return True
-    else:
-        return False
 
-#ПРОВЕРКА МАРКИ 
-def search_json(file_path, word):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        data = json.load(file)
-    
-    for item in data:
-        if word.lower() in item.lower():
-            return False
-    
-    return True
+    query = f"SELECT COUNT(*) FROM brand WHERE name_brand = ?"
+    cursor.execute(query, (brand,))
+    row_count = cursor.fetchone()[0]
+    if row_count > 0:
+        return False
+    else:
+        return True
 
 async def country(URL_for_find, mess):
     ru_text = mess.lower()
