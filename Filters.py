@@ -33,19 +33,40 @@ async def first(message, state):
     global k
     k = []
     for i in range(len(price)):
-        k.append(int(price[i]) / int(mileage[i]))
+        pr = price[i]
+        pr = ''.join([char for char in pr if char.isdigit()])
+        mil = mileage[i]
+        mil = ''.join([char for char in mil if char.isdigit()])
+        k.append(int(pr) / int(mil))
     print(k)
-    while len(fd.href_car) != 0:
-        max_value = max(fd.href_car)
-        max_index = fd.href_car.index(max_value)
-        await open(fd.href_car[max_index], message)
-        fd.href_car.pop(max_index)
-    # for i in fd.href_car:
-    #     await open(i, message)
+    index = 0
+    while (len(fd.href_car) != 0) and index < 10:
+            max_value = max(k)
+            max_index = k.index(max_value)
+            await open(fd.href_car[max_index], message)
+            fd.href_car.pop(max_index)
+            k.pop(max_index)
+            index += 1
 
 
-async def second():
-    dxf = 6
+async def second(message, state):
+    global last_message
+    last_message = await message.answer("Ваш запрос обрабатывается...")
+    await fd.pars(message, state)
+    number_of_owners = []
+    for url in fd.href_car:
+        r = requests.get(url)
+        soup = bs(r.text, 'html.parser')
+        clear = soup.find('button', class_ = 'e8vftt60 css-1uu0zmh e104a11t0').get_text()
+        clear = ''.join([char for char in clear if char.isdigit()])
+        number_of_owners.append(clear)
+    print (number_of_owners)
+    while (len(fd.href_car) != 0) and index < 10:
+            max_value = max(fd.href_car)
+            max_index = fd.href_car.index(max_value)
+            await open(fd.href_car[max_index], message)
+            fd.href_car.pop(max_index)
+            index += 1
 
 async def third():
     dxt = 6
@@ -63,7 +84,7 @@ async def open(url, message):
     info = teg_info.find("span", class_ = 'css-1kb7l9z e162wx9x0')
     if info is not None:
         info = info.text
-    info = info.ljust(900)[:900]
-    info += '\n' + url
+        info = info.ljust(900)[:900]
+        info += '\n' + url
     await message.answer_photo (image_data, caption = info)
    

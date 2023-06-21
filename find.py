@@ -34,7 +34,7 @@ async def Find(message:  types.Message):
 async def model(message: types.Message, state: FSMContext):
     mod = message.text
     if await check_brand(mod):
-        await message.answer("Некоректная марка автомобиля. Попробуйте ещё раз!")
+        await message.answer("Некорректная марка автомобиля. Попробуйте ещё раз!")
         await FSMFind.model.set()
     else:
         async with state.proxy() as date:
@@ -50,7 +50,7 @@ async def full_model(message: types.Message, state: FSMContext):
     async with state.proxy() as date:
         brand = date ['model']
     if await ckek_model(mod, brand):
-        await message.answer("Некоректная модель автомобиля. Попробуйте ещё раз!")
+        await message.answer("Некорректная модель автомобиля. Попробуйте ещё раз!")
         await FSMFind.full_model.set()
     else:
         async with state.proxy() as date:
@@ -67,7 +67,7 @@ async def year(message: types.Message, state: FSMContext):
         await FSMFind.next()
         await message.answer("Введите город для подбора авто")
     else:
-        await message.answer("Введены некорректныеданные. Попробуйте ещё раз!")
+        await message.answer("Введены некорректные данные. Попробуйте ещё раз!")
         await FSMFind.year.set()
 
 # Город
@@ -173,7 +173,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
 
 #РЕГИСТРАТОР   
 def register_handlers_find(dp: Dispatcher):
-    dp.register_message_handler(Find, commands = ['поиск', 'Поиск', 'Искать', 'искать', 'find'], state = None)
+    dp.register_message_handler(Find, commands = ['поиск', 'Поиск', 'Искать', 'start', 'find'], state = None)
     dp.register_message_handler(model, state = FSMFind.model)
     dp.register_message_handler(full_model, state = FSMFind.full_model)
     dp.register_message_handler(year, state = FSMFind.year)

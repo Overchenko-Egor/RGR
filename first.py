@@ -3,7 +3,6 @@ from aiogram import Bot, Dispatcher, executor, types # импортируем ai
 
 import find as fd
 import start as st
-from keyboard import kb_main
 
 import requests
 from bs4 import BeautifulSoup as bs
@@ -24,17 +23,14 @@ URL_main = "https://www.drom.ru/"
 
 fd.register_handlers_find(dp)
 
-async def on_startup(reply_markup= kb_main):
-  # sqlite.sql_start
-  f = 0
 
 # @dp.message_handler()
 # async def send_welcome(message: types.Message, reply_markup= kb_main):
 # 	await message.answer('Добрый день!')
 
-@dp.message_handler(commands=['start'])
-async def send_welcome(message: types.Message):
-	st.start()
+# @dp.message_handler(commands=['start'])
+# async def send_welcome(message: types.Message):
+# 	st.start()
 	
 
 # @dp.message_handler(commands='find', state = None)
@@ -43,13 +39,13 @@ async def send_welcome(message: types.Message):
 # 	await message.answer("Введите марку авто")
 	
 
-@dp.message_handler(commands=['favourites'])
-async def Favourites(message: types.Message):
-	await message.answer("Избранные объявления")
+# @dp.message_handler(commands=['favourites'])
+# async def Favourites(message: types.Message):
+# 	await message.answer("Избранные объявления")
 	
-@dp.message_handler()
-async def echo_message(msg: types.Message):
-    await bot.send_message(msg.from_user.id, msg.text)
+# @dp.message_handler()
+# async def echo_message(msg: types.Message):
+#     await bot.send_message(msg.from_user.id, msg.text)
     
 
 
@@ -58,4 +54,4 @@ async def echo_message(msg: types.Message):
 
 
 if __name__ == '__main__':
-  executor.start_polling(dp, skip_updates=True, on_startup = on_startup)
+  executor.start_polling(dp, skip_updates=True)
